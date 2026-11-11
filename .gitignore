@@ -58,6 +58,8 @@ cover/
 
 # Django stuff:
 *.log
+logfile
+
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -235,6 +237,8 @@ dist-ssr/
 .idea/
 .DS_Store
 *.log
+logfile
+
 
 # Node / React
 node_modules/
@@ -252,3 +256,5 @@ dist-ssr/
 .idea/
 .DS_Store
 *.log
+logfile
+
