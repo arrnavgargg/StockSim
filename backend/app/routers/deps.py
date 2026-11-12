@@ -1,13 +1,19 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
-from app.routers.auth import fake_users_db
+from app.database import get_db
+from app.models.user import User
 from app.schemas.user import UserResponse
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> UserResponse:
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> UserResponse:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -22,12 +28,12 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> UserResponse:
     except (JWTError, ValueError):
         raise credentials_exception
 
-    user_record = next((u for u in fake_users_db.values() if u["id"] == user_id), None)
-    if user_record is None:
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
         raise credentials_exception
 
     return UserResponse(
-        id=user_record["id"],
-        username=user_record["username"],
-        email=user_record["email"]
+        id=user.id,
+        username=user.username,
+        email=user.email,
     )
