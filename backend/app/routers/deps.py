@@ -6,14 +6,15 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.database import get_db
 from app.models.user import User
-from app.schemas.user import UserResponse
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
-) -> UserResponse:
+) -> User:
+    """Dependency that authenticates the JWT bearer token and yields the SQLAlchemy User model."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -32,8 +33,4 @@ def get_current_user(
     if user is None:
         raise credentials_exception
 
-    return UserResponse(
-        id=user.id,
-        username=user.username,
-        email=user.email,
-    )
+    return user
