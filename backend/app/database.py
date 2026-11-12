@@ -1,24 +1,20 @@
-import os
-from pydantic_settings import BaseSettings
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-class Settings(BaseSettings):
-    """Read environment variables (from .env) and provide defaults."""
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL",
-        "postgresql+psycopg://stocksim_user:strong-password@localhost/stocksim?host=/tmp",
-    )
+from app.core.config import settings
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
-
-settings = Settings()
+# Determine engine parameters based on dialect
+connect_args = {}
+if settings.DATABASE_URL.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
 
 # SQLAlchemy engine
-engine = create_engine(settings.DATABASE_URL, echo=True)
+engine = create_engine(
+    settings.DATABASE_URL,
+    echo=settings.DB_ECHO,
+    connect_args=connect_args,
+    pool_pre_ping=True,
+)
 
 # Session factory used by FastAPI dependencies
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -26,8 +22,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base class for all model definitions
 Base = declarative_base()
 
-# FastAPI dependency for getting DB sessions
+
 def get_db():
+    """FastAPI dependency for acquiring database sessions with automatic cleanup."""
     db = SessionLocal()
     try:
         yield db
