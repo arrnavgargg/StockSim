@@ -1,5 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy.orm import relationship
+
 from ..database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -9,3 +12,11 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    wallet = relationship("Wallet", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+    holdings = relationship("Holding", back_populates="user", cascade="all, delete-orphan")
+
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"
