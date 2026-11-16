@@ -49,7 +49,7 @@ def run_checks():
     client = TestClient(app)
     test_id = uuid.uuid4().hex[:6]
     username = f"trader_{test_id}"
-    email = f"{username}@stocksim.test"
+    email = f"{username}@stocksim.com"
     password = "SecurePassword123!"
 
     reg_res = client.post("/api/auth/register", json={
@@ -87,7 +87,7 @@ def run_checks():
     port_res = client.get("/api/portfolio/summary", headers=headers)
     assert port_res.status_code == 200, f"Portfolio check failed: {port_res.text}"
     port_data = port_res.json()
-    print(f"  ✅ Portfolio updated: Cash=${port_data['cash_balance']:,.2f}, Stock Value=${port_data['current_portfolio_value']:,.2f}, Net Worth=${port_data['net_worth']:,.2f}")
+    print(f"  ✅ Portfolio updated: Cash=${float(port_data['cash_balance']):,.2f}, Stock Value=${float(port_data['current_portfolio_value']):,.2f}, Net Worth=${float(port_data['net_worth']):,.2f}")
 
     # Insufficient Funds Guard Check (Attempt buying 1,000,000 shares)
     fail_buy = client.post("/api/orders", json={
