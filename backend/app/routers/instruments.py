@@ -7,6 +7,7 @@ from app.schemas.instrument import (
     InstrumentCreate,
     InstrumentResponse,
     QuoteResponse,
+    PriceUpdateRequest,
 )
 from app.services.market_data_service import MarketDataService
 
@@ -43,6 +44,27 @@ def get_instrument_quote(
     """Get real-time market quote including day change and intraday range."""
     service = MarketDataService(db)
     return service.get_quote(symbol)
+
+
+@router.post("/{symbol}/price", response_model=QuoteResponse)
+def update_instrument_price(
+    symbol: str,
+    payload: PriceUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    """Update stock market price and automatically evaluate/trigger any limit orders."""
+    from app.services.limit_order_service import LimitOrderService
+    market_service = MarketDataService(db)
+    inst = market_service.get_instrument(symbol)
+    inst.current_price = payload.price
+    db.commit()
+    db.refresh(inst)
+
+    # Check and trigger any limit orders across all users for this price movement
+    limit_service = LimitOrderService(db)
+    limit_service.check_and_trigger_all()
+
+    return market_service.get_quote(symbol)
 
 
 @router.post("", response_model=InstrumentResponse, status_code=status.HTTP_201_CREATED)

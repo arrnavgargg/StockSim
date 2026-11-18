@@ -15,6 +15,8 @@ class Instrument(Base):
     # Relationships
     orders = relationship("Order", back_populates="instrument")
     holdings = relationship("Holding", back_populates="instrument")
+    limit_orders = relationship("LimitOrder", back_populates="instrument")
+    watchlist_items = relationship("WatchlistItem", back_populates="instrument")
 
     def __repr__(self) -> str:
         return f"<Instrument(symbol='{self.symbol}', company='{self.company_name}', price=${self.current_price})>"

@@ -17,6 +17,8 @@ class User(Base):
     wallet = relationship("Wallet", back_populates="user", uselist=False, cascade="all, delete-orphan")
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     holdings = relationship("Holding", back_populates="user", cascade="all, delete-orphan")
+    limit_orders = relationship("LimitOrder", back_populates="user", cascade="all, delete-orphan")
+    watchlist_items = relationship("WatchlistItem", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"

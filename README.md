@@ -58,6 +58,50 @@ pytest tests/ -v
 
 ---
 
+## 🎨 Quickstart: Frontend
+
+The StockSim frontend is built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**, featuring high-performance financial charts and a dark-theme trading desk interface.
+
+### 1. Install Node Dependencies
+```bash
+cd frontend
+npm install
+```
+
+### 2. Run the Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser. The Vite development server automatically proxies `/api` requests to `http://localhost:8000`.
+
+### 3. Production Build
+```bash
+npm run build
+```
+
+---
+
+## 🖥️ Frontend Features
+
+- **Trading Terminal (`/`)**:
+  - Live watchlist of tradeable blue chips with real-time search and filter.
+  - Interactive SVG price charts with **Area** and **Candlestick** modes across **1D**, **1W**, **1M**, **1Y**, and **ALL** timeframes with crosshair hover tooltips.
+  - Market Order Ticket supporting atomic `BUY` and `SELL` orders, quick quantity adjustments, max-afford calculation, and real-time cash/shares validation.
+- **Portfolio Dashboard**:
+  - Real-time mark-to-market net worth, total invested capital, current equity valuation, and unrealized profit/loss ($ and %).
+  - Visual asset allocation progress breakdown (Cash vs. Equities).
+  - Active positions table with average cost basis, current market prices, live returns, and direct trade shortcuts.
+- **Order Execution History**:
+  - Chronological transaction log of all executed trades with side filters (`BUY`, `SELL`, `ALL`) and symbol search.
+- **Wallet & Cash Ledger**:
+  - Available cash balance display with quick virtual deposit and withdrawal modals.
+  - Auditable transaction ledger tracking deposits, withdrawals, and trade debits/credits.
+- **Authentication & Starter Capital**:
+  - OAuth2 JWT Bearer token authentication with instant **$10,000 USD** starter wallet auto-provisioned upon registration.
+  - One-click **Demo Trader** shortcut for instant trial and presentation.
+
+---
+
 ## 📡 Core API Endpoints
 
 ### 🔐 Authentication (`/api/auth`)
@@ -89,6 +133,6 @@ pytest tests/ -v
 ---
 
 ## 📚 Documentation
-- [docs/schema.md](file:///home/arnavgarg/StockSim/docs/schema.md) — 3NF Relational Database Schema & Invariants
-- [docs/SRS.md](file:///home/arnavgarg/StockSim/docs/SRS.md) — Software Requirements Specification
-- [docs/usecase.md](file:///home/arnavgarg/StockSim/docs/usecase.md) — Platform Use Cases & Workflows
+- [docs/schema.md](file:///home/satoru/StockSim/docs/schema.md) — 3NF Relational Database Schema & Invariants
+- [docs/SRS.md](file:///home/satoru/StockSim/docs/SRS.md) — Software Requirements Specification
+- [docs/usecase.md](file:///home/satoru/StockSim/docs/usecase.md) — Platform Use Cases & Workflows

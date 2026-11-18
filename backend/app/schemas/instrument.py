@@ -20,6 +20,10 @@ class InstrumentResponse(InstrumentBase):
         from_attributes = True
 
 
+class PriceUpdateRequest(BaseModel):
+    price: Decimal = Field(..., gt=0, description="New market price per share")
+
+
 class QuoteResponse(BaseModel):
     symbol: str
     company_name: str
