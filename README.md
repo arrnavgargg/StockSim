@@ -112,8 +112,28 @@ npm run build
 ### 📈 Market Data & Instruments (`/api/instruments`)
 - `GET /api/instruments` - List & search stocks
 - `GET /api/instruments/{symbol}` - Instrument details
-- `GET /api/instruments/{symbol}/quote` - Real-time quotes and intraday stats
+- `GET /api/instruments/{symbol}/quote` - Real-time quotes with Alpaca v2 live feed support
+- `GET /api/instruments/{symbol}/bars` - Historical OHLCV candlestick bars from Alpaca
+- `POST /api/instruments/sync-alpaca` - Batch sync instrument prices with Alpaca
+- `GET /api/instruments/alpaca/status` - Alpaca API connection health check
 - `POST /api/instruments/seed` - Seed stock catalog (AAPL, MSFT, GOOGL, TSLA, NVDA, etc.)
+
+---
+
+## 🦙 Alpaca API Configuration (Optional)
+
+StockSim works out of the box using built-in high-fidelity market simulations. To stream **real live US equity prices** via Alpaca:
+
+1. Sign up for a free account at [https://app.alpaca.markets/signup](https://app.alpaca.markets/signup).
+2. Generate an **API Key** and **Secret Key** from your Alpaca dashboard.
+3. Add them to `backend/.env`:
+   ```bash
+   ALPACA_API_KEY="your-alpaca-key-id"
+   ALPACA_SECRET_KEY="your-alpaca-secret-key"
+   ALPACA_DATA_URL="https://data.alpaca.markets/v2"
+   ALPACA_FEED="iex"
+   ```
+4. Restart the backend or click **Sync Live Prices** in the web UI! All stock quotes, candlestick charts, and limit order triggers will automatically stream live market data directly from Alpaca.
 
 ### 💼 Trading & Orders (`/api/orders`)
 - `POST /api/orders` - Execute BUY or SELL market order (atomic execution)

@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class OrderSide(str, Enum):
@@ -24,6 +24,8 @@ class OrderCreate(BaseModel):
 
 
 class OrderResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     symbol: str
@@ -33,6 +35,3 @@ class OrderResponse(BaseModel):
     total_value: Optional[Decimal] = None
     status: str
     timestamp: datetime
-
-    class Config:
-        from_attributes = True

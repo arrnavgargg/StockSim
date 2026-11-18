@@ -62,7 +62,7 @@ export const AuthModal: React.FC = () => {
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             {authMode === 'register'
-              ? 'Join StockSim and receive a $10,000 USD virtual portfolio'
+              ? 'Join StockSim and receive a ₹10,00,000 INR virtual portfolio'
               : 'Sign in to access your portfolio and execute trades'}
           </p>
         </div>
@@ -95,17 +95,17 @@ export const AuthModal: React.FC = () => {
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            Register ($10K Bonus)
+            Register (₹10L Bonus)
           </button>
         </div>
 
-        {/* $10,000 Starter Banner for Registration */}
+        {/* ₹10,00,000 Starter Banner for Registration */}
         {authMode === 'register' && (
           <div className="mb-5 p-3 rounded-xl bg-gradient-to-r from-emerald-950/60 to-indigo-950/60 border border-emerald-500/30 flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-emerald-400 shrink-0" />
             <div className="text-xs">
               <span className="font-bold text-emerald-300 block">
-                $10,000 Starter Capital Included
+                ₹10,00,000 Starter Capital Included
               </span>
               <span className="text-slate-400">
                 Risk-free virtual cash automatically deposited upon registration.
@@ -205,7 +205,7 @@ export const AuthModal: React.FC = () => {
                 Processing...
               </span>
             ) : authMode === 'register' ? (
-              'Create Account & Claim $10,000'
+              'Create Account & Claim ₹10,00,000'
             ) : (
               'Sign In'
             )}

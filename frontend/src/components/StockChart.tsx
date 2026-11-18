@@ -159,7 +159,7 @@ export const StockChart: React.FC<StockChartProps> = ({ quote, height = 340 }) =
         <div>
           <div className="flex items-center gap-3">
             <span className="text-2xl font-black tracking-tight text-white font-mono">
-              ${activePoint ? activePoint.close.toFixed(2) : Number(quote.current_price).toFixed(2)}
+              ₹{activePoint ? activePoint.close.toFixed(2) : Number(quote.current_price).toFixed(2)}
             </span>
             <span
               className={`flex items-center gap-1 text-sm font-semibold px-2.5 py-0.5 rounded-full ${
@@ -171,17 +171,27 @@ export const StockChart: React.FC<StockChartProps> = ({ quote, height = 340 }) =
               {quote.change !== undefined ? Number(quote.change).toFixed(2) : '0.00'} (
               {quote.change_percent !== undefined ? Number(quote.change_percent).toFixed(2) : '0.00'}%)
             </span>
+            {quote.source === 'paytm' || quote.source === 'alpaca' ? (
+              <span className="text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Paytm Live ({quote.exchange || 'NSE'})
+              </span>
+            ) : (
+              <span className="text-[10px] bg-slate-800 text-slate-400 border border-slate-700/60 px-2 py-0.5 rounded-full font-mono">
+                Simulated Feed
+              </span>
+            )}
           </div>
           <div className="text-xs text-slate-400 font-mono mt-1 flex items-center gap-3">
             <span>{activePoint ? activePoint.time : 'Market Time'}</span>
             <span>•</span>
-            <span>Vol: {activePoint ? activePoint.volume.toLocaleString() : '---'}</span>
+            <span>Vol: {activePoint ? activePoint.volume.toLocaleString('en-IN') : '---'}</span>
             {hoverIndex !== null && (
               <>
                 <span>•</span>
-                <span>O: ${activePoint.open}</span>
-                <span>H: ${activePoint.high}</span>
-                <span>L: ${activePoint.low}</span>
+                <span>O: ₹{activePoint.open}</span>
+                <span>H: ₹{activePoint.high}</span>
+                <span>L: ₹{activePoint.low}</span>
               </>
             )}
           </div>
@@ -280,7 +290,7 @@ export const StockChart: React.FC<StockChartProps> = ({ quote, height = 340 }) =
                   fontSize="10"
                   fontFamily="monospace"
                 >
-                  ${priceVal.toFixed(1)}
+                  ₹{priceVal.toFixed(1)}
                 </text>
               </g>
             );
@@ -394,25 +404,25 @@ export const StockChart: React.FC<StockChartProps> = ({ quote, height = 340 }) =
         <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/60">
           <span className="text-slate-400 block mb-0.5">Day Range</span>
           <span className="font-mono font-medium text-slate-200">
-            ${Number(quote.day_low || 0).toFixed(2)} - ${Number(quote.day_high || 0).toFixed(2)}
+            ₹{Number(quote.day_low || 0).toFixed(2)} - ₹{Number(quote.day_high || 0).toFixed(2)}
           </span>
         </div>
         <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/60">
           <span className="text-slate-400 block mb-0.5">Prev Close</span>
           <span className="font-mono font-medium text-slate-200">
-            ${Number(quote.previous_close || 0).toFixed(2)}
+            ₹{Number(quote.previous_close || 0).toFixed(2)}
           </span>
         </div>
         <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/60">
           <span className="text-slate-400 block mb-0.5">Day High</span>
           <span className="font-mono font-medium text-emerald-400">
-            ${Number(quote.day_high || 0).toFixed(2)}
+            ₹{Number(quote.day_high || 0).toFixed(2)}
           </span>
         </div>
         <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/60">
           <span className="text-slate-400 block mb-0.5">Day Low</span>
           <span className="font-mono font-medium text-red-400">
-            ${Number(quote.day_low || 0).toFixed(2)}
+            ₹{Number(quote.day_low || 0).toFixed(2)}
           </span>
         </div>
       </div>

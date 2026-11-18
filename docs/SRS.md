@@ -28,6 +28,10 @@ StockSim is a web-based simulated stock market platform that empowers users to p
 - **FR-2.1**: Browse list of tradeable instruments with search by ticker or company name (`GET /api/instruments`).
 - **FR-2.2**: Fetch real-time market quote including 24-hour change, percentage change, day high, and day low (`GET /api/instruments/{symbol}/quote`).
 - **FR-2.3**: Seed catalog with standard blue-chip equities (AAPL, MSFT, GOOGL, TSLA, NVDA, META, etc.).
+- **FR-2.4**: Alpaca Market Data v2 API integration providing live real-world equity snapshots with graceful simulation fallback.
+- **FR-2.5**: Historical OHLCV candlestick/bar series via `GET /api/instruments/{symbol}/bars` for charting.
+- **FR-2.6**: Real-time batch price sync (`POST /api/instruments/sync-alpaca`) updating database quotes and auto-evaluating limit order triggers.
+- **FR-2.7**: Connection health check endpoint (`GET /api/instruments/alpaca/status`).
 
 ### 2.3 Trading & Order Execution
 - **FR-3.1**: Place market `BUY` orders with positive integer share quantities.

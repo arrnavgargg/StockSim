@@ -107,13 +107,19 @@ export const TradingCard: React.FC<TradingCardProps> = ({
     }
 
     if (executionMode === 'limit' && targetPrice <= 0) {
-      setErrorMsg('Target price must be greater than $0.');
+      setErrorMsg('Target price must be greater than ₹0.');
       return;
     }
 
     if (hasInsufficientFunds) {
       setErrorMsg(
-        `Insufficient funds: Need $${totalEstimatedCost.toFixed(2)}, have $${walletBalance.toFixed(2)}.`
+        `Insufficient funds: Need ₹${totalEstimatedCost.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}, have ₹${walletBalance.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}.`
       );
       return;
     }
@@ -130,7 +136,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
         const order = await api.placeOrder(instrument.symbol, orderType, quantity);
         await refreshUser();
         onOrderSuccess(
-          `Executed ${order.order_type.toUpperCase()} ${order.quantity} shares of ${order.symbol} @ $${Number(order.price).toFixed(2)}!`
+          `Executed ${order.order_type.toUpperCase()} ${order.quantity} shares of ${order.symbol} @ ₹${Number(order.price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}!`
         );
       } else {
         // Limit / Auto-Trade order
@@ -144,11 +150,11 @@ export const TradingCard: React.FC<TradingCardProps> = ({
 
         if (limitOrder.status === 'triggered') {
           onOrderSuccess(
-            `Auto-Trade condition already met! Immediately executed ${limitOrder.side.toUpperCase()} ${limitOrder.quantity} ${limitOrder.symbol} @ $${price.toFixed(2)}!`
+            `Auto-Trade condition already met! Immediately executed ${limitOrder.side.toUpperCase()} ${limitOrder.quantity} ${limitOrder.symbol} @ ₹${price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}!`
           );
         } else {
           onOrderSuccess(
-            `Auto-Trade active! System will auto-${limitOrder.side.toUpperCase()} ${limitOrder.quantity} ${limitOrder.symbol} once price reaches $${Number(limitOrder.target_price).toFixed(2)}.`
+            `Auto-Trade active! System will auto-${limitOrder.side.toUpperCase()} ${limitOrder.quantity} ${limitOrder.symbol} once price reaches ₹${Number(limitOrder.target_price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
           );
         }
       }
@@ -167,7 +173,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
     try {
       setLoading(true);
       await api.updateInstrumentPrice(instrument.symbol, p);
-      onOrderSuccess(`Market price for ${instrument.symbol} moved to $${p.toFixed(2)}! Checking auto-trade triggers...`);
+      onOrderSuccess(`Market price for ${instrument.symbol} moved to ₹${p.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}! Checking auto-trade triggers...`);
       if (onPriceSimulated) onPriceSimulated();
       await refreshUser();
     } catch (err: any) {
@@ -195,7 +201,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
               Live Market
             </span>
             <span className="text-lg font-extrabold text-white font-mono">
-              ${price.toFixed(2)}
+              ₹{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
@@ -276,7 +282,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
           </span>
           <span className="font-mono font-semibold text-slate-200">
             {isBuy
-              ? `$${walletBalance.toLocaleString('en-US', {
+              ? `₹${walletBalance.toLocaleString('en-IN', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}`
@@ -290,7 +296,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
             <div className="flex items-center justify-between text-xs">
               <label htmlFor="target-price-input" className="font-bold text-indigo-300 flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5 text-cyan-400" />
-                Auto-{isBuy ? 'Buy' : 'Sell'} Target Price (USD)
+                Auto-{isBuy ? 'Buy' : 'Sell'} Target Price (INR)
               </label>
               <span className="text-[11px] font-mono text-slate-400">
                 {Number(priceDiffPct) >= 0 ? `+${priceDiffPct}%` : `${priceDiffPct}%`} vs market
@@ -299,7 +305,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
 
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-indigo-400 font-mono font-bold text-sm">
-                $
+                ₹
               </span>
               <input
                 id="target-price-input"
@@ -347,11 +353,11 @@ export const TradingCard: React.FC<TradingCardProps> = ({
             <p className="text-[11px] text-indigo-300/90 leading-tight">
               {isBuy ? (
                 <span>
-                  📉 Order automatically executes when market drops to <strong>${targetPrice.toFixed(2)}</strong> or lower.
+                  📉 Order automatically executes when market drops to <strong>₹{targetPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> or lower.
                 </span>
               ) : (
                 <span>
-                  📈 Order automatically executes when market rises to <strong>${targetPrice.toFixed(2)}</strong> or higher.
+                  📈 Order automatically executes when market rises to <strong>₹{targetPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> or higher.
                 </span>
               )}
             </p>
@@ -427,12 +433,12 @@ export const TradingCard: React.FC<TradingCardProps> = ({
           </div>
           <div className="flex justify-between text-slate-400">
             <span>{executionMode === 'market' ? 'Execution Price' : 'Target Trigger Price'}</span>
-            <span className="font-mono text-slate-200">${effectivePrice.toFixed(2)}</span>
+            <span className="font-mono text-slate-200">₹{effectivePrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between text-sm font-semibold text-white pt-2 border-t border-slate-800">
             <span>Estimated Total</span>
             <span className="font-mono text-base font-bold text-white">
-              ${totalEstimatedCost.toLocaleString('en-US', {
+              ₹{totalEstimatedCost.toLocaleString('en-IN', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -447,7 +453,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
             <div>
               <p className="font-semibold">Insufficient Cash Balance</p>
               <p className="text-red-400/80 mt-0.5">
-                Need ${(totalEstimatedCost - walletBalance).toFixed(2)} more cash.
+                Need ₹{(totalEstimatedCost - walletBalance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} more cash.
               </p>
             </div>
           </div>
@@ -493,7 +499,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
             ) : executionMode === 'limit' ? (
               <span className="flex items-center gap-1.5">
                 <Target className="w-4 h-4" />
-                Set Auto-{orderType.toUpperCase()} {quantity} {instrument.symbol} @ ${targetPrice.toFixed(2)}
+                Set Auto-{orderType.toUpperCase()} {quantity} {instrument.symbol} @ ₹{targetPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             ) : (
               <span>
@@ -533,7 +539,7 @@ export const TradingCard: React.FC<TradingCardProps> = ({
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-xs font-bold">
-                    $
+                    ₹
                   </span>
                   <input
                     type="number"

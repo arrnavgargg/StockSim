@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LimitOrderSide(str, Enum):
@@ -25,6 +25,8 @@ class LimitOrderCreate(BaseModel):
 
 
 class LimitOrderResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     symbol: str
@@ -35,6 +37,3 @@ class LimitOrderResponse(BaseModel):
     created_at: datetime
     triggered_at: Optional[datetime] = None
     executed_order_id: Optional[int] = None
-
-    class Config:
-        from_attributes = True

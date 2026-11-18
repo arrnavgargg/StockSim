@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Instrument, Quote, PortfolioHoldingItem } from '../types';
+import { Instrument, Quote, PortfolioHoldingItem, LiveTick } from '../types';
 import { api } from '../api/client';
+import { marketWs } from '../api/websocket';
 import { useAuth } from '../context/AuthContext';
 import { StockChart } from '../components/StockChart';
 import { TradingCard } from '../components/TradingCard';
@@ -14,6 +15,7 @@ import {
   Flame,
   CheckCircle,
   Star,
+  Radio,
 } from 'lucide-react';
 
 interface TradingProps {
@@ -22,6 +24,8 @@ interface TradingProps {
   onRefreshData: () => void;
 }
 
+const DEFAULT_NSE_WATCHLIST = ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ITC', 'BHARTIARTL'];
+
 export const Trading: React.FC<TradingProps> = ({
   onSuccessToast,
   userHoldings,
@@ -29,14 +33,16 @@ export const Trading: React.FC<TradingProps> = ({
 }) => {
   const { user } = useAuth();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('AAPL');
+  const [selectedSymbol, setSelectedSymbol] = useState<string>('RELIANCE');
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
   const [search, setSearch] = useState<string>('');
   const [loadingInstruments, setLoadingInstruments] = useState<boolean>(true);
   const [loadingQuote, setLoadingQuote] = useState<boolean>(false);
-  const [watchedSymbols, setWatchedSymbols] = useState<string[]>([]);
+  const [watchedSymbols, setWatchedSymbols] = useState<string[]>(DEFAULT_NSE_WATCHLIST);
+  const [watchlistInstruments, setWatchlistInstruments] = useState<Instrument[]>([]);
   const [activeWatchTab, setActiveWatchTab] = useState<'all' | 'watchlist'>('all');
+  const [wsLive, setWsLive] = useState<boolean>(false);
 
   // Fetch instruments catalog
   const fetchInstruments = async () => {
@@ -49,9 +55,9 @@ export const Trading: React.FC<TradingProps> = ({
       }
       setInstruments(list);
 
-      // Default select AAPL or first item
+      // Default select RELIANCE or first item
       if (list.length > 0 && !selectedInstrument) {
-        const defaultInst = list.find((i) => i.symbol === 'AAPL') || list[0];
+        const defaultInst = list.find((i) => i.symbol === 'RELIANCE') || list[0];
         setSelectedSymbol(defaultInst.symbol);
         setSelectedInstrument(defaultInst);
       }
@@ -82,34 +88,113 @@ export const Trading: React.FC<TradingProps> = ({
 
   useEffect(() => {
     fetchQuote();
-    // Poll quote every 10s for live market feel
+    // Poll quote every 10s as fallback if WebSocket pauses
     const interval = setInterval(fetchQuote, 10000);
     return () => clearInterval(interval);
   }, [selectedSymbol]);
 
-  // Fetch watchlist symbols
+  // Subscribe to live market ticks via WebSocket
   useEffect(() => {
-    const fetchWatchlist = async () => {
-      if (user) {
-        try {
-          const syms = await api.getWatchedSymbols();
-          setWatchedSymbols(syms);
-        } catch (e) {
-          console.error('Error fetching watchlist symbols:', e);
+    if (selectedSymbol) {
+      marketWs.subscribe(selectedSymbol, selectedInstrument?.security_id);
+    }
+  }, [selectedSymbol, selectedInstrument]);
+
+  // Real-time WebSocket tick listener for instant price reactivity
+  useEffect(() => {
+    const unsubscribe = marketWs.addListener((tick: LiveTick) => {
+      setWsLive(true);
+      // Update quote if matching currently viewed stock
+      if (tick.symbol === selectedSymbol) {
+        setSelectedQuote((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            current_price: tick.last_price,
+            change: tick.change !== undefined ? tick.change : prev.change,
+            change_percent: tick.change_percent !== undefined ? tick.change_percent : prev.change_percent,
+            volume: tick.volume !== undefined ? tick.volume : prev.volume,
+            source: tick.source || prev.source,
+          };
+        });
+      }
+
+      // Update instruments catalog price in real time
+      setInstruments((prev) =>
+        prev.map((inst) =>
+          inst.symbol === tick.symbol
+            ? { ...inst, current_price: tick.last_price }
+            : inst
+        )
+      );
+
+      // Also update watchlist instruments price in real time
+      setWatchlistInstruments((prev) =>
+        prev.map((inst) =>
+          inst.symbol === tick.symbol
+            ? { ...inst, current_price: tick.last_price }
+            : inst
+        )
+      );
+    });
+
+    return unsubscribe;
+  }, [selectedSymbol]);
+
+  // Fetch watchlist symbols & full instrument details
+  const fetchWatchlist = async () => {
+    if (user) {
+      try {
+        const items = await api.getWatchlist();
+        if (items.length > 0) {
+          const mapped: Instrument[] = items.map((w) => ({
+            id: w.id,
+            symbol: w.symbol,
+            company_name: w.company_name || w.symbol,
+            current_price: w.current_price ?? 0,
+            security_id: w.security_id,
+          }));
+          setWatchlistInstruments(mapped);
+          setWatchedSymbols(items.map((w) => w.symbol));
+        } else {
+          setWatchlistInstruments([]);
+          setWatchedSymbols([]);
         }
-      } else {
-        const saved = localStorage.getItem('stocksim_watchlist');
-        if (saved) {
-          try {
-            setWatchedSymbols(JSON.parse(saved));
-          } catch (e) {
-            console.error('Error loading watchlist from localStorage:', e);
+      } catch (e) {
+        console.error('Error fetching watchlist:', e);
+      }
+    } else {
+      const saved = localStorage.getItem('stocksim_watchlist');
+      let syms: string[] = DEFAULT_NSE_WATCHLIST;
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            syms = parsed;
           }
+        } catch {
+          // ignore
         }
       }
-    };
+      setWatchedSymbols(syms);
+      const guestItems: Instrument[] = syms.map((sym, idx) => {
+        const found = instruments.find((i) => i.symbol === sym);
+        return (
+          found || {
+            id: -(idx + 1),
+            symbol: sym,
+            company_name: sym,
+            current_price: 0,
+          }
+        );
+      });
+      setWatchlistInstruments(guestItems);
+    }
+  };
+
+  useEffect(() => {
     fetchWatchlist();
-  }, [user]);
+  }, [user, instruments.length]);
 
   const handleToggleWatchlist = async (symbol: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -119,12 +204,23 @@ export const Trading: React.FC<TradingProps> = ({
       : [...watchedSymbols, symbol];
     setWatchedSymbols(updated);
 
+    // Optimistically update watchlistInstruments
+    if (isWatched) {
+      setWatchlistInstruments((prev) => prev.filter((i) => i.symbol !== symbol));
+    } else {
+      const targetInst = instruments.find((i) => i.symbol === symbol);
+      if (targetInst) {
+        setWatchlistInstruments((prev) => [targetInst, ...prev.filter((i) => i.symbol !== symbol)]);
+      }
+    }
+
     if (user) {
       try {
         const res = await api.toggleWatchlist(symbol);
         onSuccessToast(res.message);
+        await fetchWatchlist();
       } catch (err: any) {
-        setWatchedSymbols(watchedSymbols);
+        await fetchWatchlist();
         onSuccessToast(err.response?.data?.detail || err.message || 'Failed to update watchlist');
       }
     } else {
@@ -137,12 +233,19 @@ export const Trading: React.FC<TradingProps> = ({
 
   const displayedInstruments =
     activeWatchTab === 'watchlist'
-      ? instruments.filter((i) => watchedSymbols.includes(i.symbol))
+      ? (search.trim()
+          ? watchlistInstruments.filter(
+              (i) =>
+                i.symbol.toLowerCase().includes(search.toLowerCase()) ||
+                i.company_name.toLowerCase().includes(search.toLowerCase())
+            )
+          : watchlistInstruments)
       : instruments;
 
   const handleSelectInstrument = (inst: Instrument) => {
     setSelectedSymbol(inst.symbol);
     setSelectedInstrument(inst);
+    marketWs.subscribe(inst.symbol, inst.security_id);
   };
 
   const currentHolding = userHoldings.find((h) => h.symbol === selectedSymbol);
@@ -160,16 +263,24 @@ export const Trading: React.FC<TradingProps> = ({
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-amber-400" />
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                  Market Watch
+                  NSE Market Watch
                 </h3>
               </div>
-              <button
-                onClick={fetchInstruments}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                title="Refresh market catalog"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingInstruments ? 'animate-spin' : ''}`} />
-              </button>
+              <div className="flex items-center gap-2">
+                {wsLive && (
+                  <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    <Radio className="w-3 h-3 animate-pulse" />
+                    LIVE
+                  </span>
+                )}
+                <button
+                  onClick={fetchInstruments}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                  title="Refresh market catalog"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingInstruments ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
             </div>
 
             {/* Watchlist Tabs */}
@@ -212,7 +323,7 @@ export const Trading: React.FC<TradingProps> = ({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search ticker or company..."
+                placeholder="Search any of 3,000+ NSE stocks (e.g. TATASTEEL, MARUTI, WIPRO)..."
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
               />
             </div>
@@ -288,11 +399,11 @@ export const Trading: React.FC<TradingProps> = ({
 
                       <div className="text-right">
                         <span className="font-bold font-mono text-sm text-slate-100 block">
-                          ${price.toFixed(2)}
+                          ₹{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-[10px] text-emerald-400 flex items-center justify-end gap-0.5">
                           <TrendingUp className="w-2.5 h-2.5" />
-                          <span>Active</span>
+                          <span>NSE</span>
                         </span>
                       </div>
                     </div>
@@ -354,13 +465,13 @@ export const Trading: React.FC<TradingProps> = ({
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-400">Avg Cost Basis</span>
                       <span className="font-mono text-slate-200">
-                        ${Number(currentHolding.average_buy_price).toFixed(2)}
+                        ₹{Number(currentHolding.average_buy_price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-400">Current Value</span>
                       <span className="font-mono text-slate-200">
-                        ${Number(currentHolding.current_value).toFixed(2)}
+                        ₹{Number(currentHolding.current_value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs pt-2 border-t border-emerald-500/20">
@@ -372,8 +483,8 @@ export const Trading: React.FC<TradingProps> = ({
                             : 'text-red-400'
                         }`}
                       >
-                        {Number(currentHolding.unrealized_pnl) >= 0 ? '+' : ''}$
-                        {Number(currentHolding.unrealized_pnl).toFixed(2)} (
+                        {Number(currentHolding.unrealized_pnl) >= 0 ? '+' : ''}₹
+                        {Number(currentHolding.unrealized_pnl).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (
                         {Number(currentHolding.unrealized_pnl_percent).toFixed(2)}%)
                       </span>
                     </div>
@@ -393,11 +504,11 @@ export const Trading: React.FC<TradingProps> = ({
                 <div className="mt-5 space-y-2 text-xs">
                   <div className="flex justify-between text-slate-400">
                     <span>Asset Class</span>
-                    <span className="text-slate-200 font-mono">US Equity (Common Stock)</span>
+                    <span className="text-slate-200 font-mono">Indian Equity (NSE)</span>
                   </div>
                   <div className="flex justify-between text-slate-400">
                     <span>Currency</span>
-                    <span className="text-slate-200 font-mono">USD ($)</span>
+                    <span className="text-slate-200 font-mono">INR (₹)</span>
                   </div>
                   <div className="flex justify-between text-slate-400">
                     <span>Market Status</span>
@@ -407,7 +518,7 @@ export const Trading: React.FC<TradingProps> = ({
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-                Simulated execution with instant fill & zero slippage.
+                Simulated execution with instant fill & zero slippage (Paytm Money).
               </div>
             </div>
           </div>
