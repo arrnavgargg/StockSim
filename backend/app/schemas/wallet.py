@@ -1,15 +1,14 @@
 from decimal import Decimal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class WalletResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     balance: Decimal = Field(..., description="Available cash balance")
-    currency: str = "USD"
-
-    class Config:
-        from_attributes = True
+    currency: str = "INR"
 
 
 class DepositRequest(BaseModel):

@@ -56,8 +56,8 @@ export const WalletPage: React.FC<WalletProps> = ({ onOpenDeposit, onOpenWithdra
               <span>Simulated Cash Wallet</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">
-              ${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-              <span className="text-lg font-bold text-slate-400">USD</span>
+              ₹{walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+              <span className="text-lg font-bold text-slate-400">INR</span>
             </h1>
             <p className="text-xs text-slate-400 mt-2">
               Virtual liquidity available immediately for market execution orders.
@@ -163,8 +163,8 @@ export const WalletPage: React.FC<WalletProps> = ({ onOpenDeposit, onOpenWithdra
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-bold text-white text-sm">
-                        {isDeposit ? '+' : isWithdraw ? '-' : ''}$
-                        {Number(tx.amount).toFixed(2)}
+                        {isDeposit ? '+' : isWithdraw ? '-' : ''}₹
+                        {Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3.5 px-4 font-sans">
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400">

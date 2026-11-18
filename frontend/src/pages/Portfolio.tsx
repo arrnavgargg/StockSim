@@ -55,7 +55,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             }}
             className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-950/40 transition"
           >
-            Claim $10,000 Portfolio
+            Claim ₹10,00,000 Portfolio
           </button>
         </div>
       </div>
@@ -88,12 +88,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-white font-mono">
-            ${netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{netWorth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center gap-1.5">
-            <span>Cash: ${(walletBalance).toFixed(2)}</span>
+            <span>Cash: ₹{walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             <span>•</span>
-            <span>Equities: ${stockValue.toFixed(2)}</span>
+            <span>Equities: ₹{stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </div>
 
@@ -114,7 +114,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
               isProfit ? 'text-emerald-400' : 'text-red-400'
             }`}
           >
-            {isProfit ? '+' : ''}${totalPnl.toFixed(2)}
+            {isProfit ? '+' : ''}₹{totalPnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className="mt-2 text-xs flex items-center gap-1.5">
             <span
@@ -137,10 +137,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-white font-mono">
-            ${totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{totalInvested.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className="mt-2 text-xs text-slate-400">
-            Current Equity Value: ${stockValue.toFixed(2)}
+            Current Equity Value: ₹{stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
@@ -154,7 +154,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
               </div>
             </div>
             <div className="mt-2 text-2xl font-black text-emerald-400 font-mono">
-              ${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹{walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
           <button
@@ -228,7 +228,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
               Your portfolio has no active stock holdings. Head over to the Trading Terminal to place your first trade!
             </p>
             <button
-              onClick={() => onSelectStockToTrade('AAPL')}
+              onClick={() => onSelectStockToTrade('RELIANCE')}
               className="mt-5 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-950/50 transition inline-flex items-center gap-1.5"
             >
               <span>Explore Market & Trade</span>
@@ -273,16 +273,16 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         {h.quantity} shares
                       </td>
                       <td className="py-3.5 px-4 text-slate-300">
-                        ${Number(h.average_buy_price).toFixed(2)}
+                        ₹{Number(h.average_buy_price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3.5 px-4 text-white font-bold">
-                        ${Number(h.current_price).toFixed(2)}
+                        ₹{Number(h.current_price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3.5 px-4 text-slate-400">
-                        ${Number(h.total_invested).toFixed(2)}
+                        ₹{Number(h.total_invested).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3.5 px-4 text-slate-100 font-semibold">
-                        ${Number(h.current_value).toFixed(2)}
+                        ₹{Number(h.current_value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3.5 px-4">
                         <span
@@ -290,7 +290,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                             isPos ? 'text-emerald-400' : 'text-red-400'
                           }`}
                         >
-                          {isPos ? '+' : ''}${pnl.toFixed(2)} ({isPos ? '+' : ''}
+                          {isPos ? '+' : ''}₹{pnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({isPos ? '+' : ''}
                           {pnlPct.toFixed(2)}%)
                         </span>
                       </td>

@@ -1,5 +1,10 @@
 import {
+  AlpacaStatus,
+  AlpacaSyncResponse,
+  PaytmStatus,
+  PaytmSyncResponse,
   AuthResponse,
+  HistoricalBarsResponse,
   Instrument,
   LimitOrder,
   LimitOrderSide,
@@ -129,6 +134,39 @@ class ApiClient {
     return this.request<Instrument[]>('/api/instruments/seed', {
       method: 'POST',
     });
+  }
+
+  // --- Paytm Money Open API Endpoints ---
+  async getPaytmStatus(): Promise<PaytmStatus> {
+    return this.request<PaytmStatus>('/api/instruments/paytm/status');
+  }
+
+  async syncPaytmPrices(symbols?: string): Promise<PaytmSyncResponse> {
+    const query = symbols ? `?symbols=${encodeURIComponent(symbols)}` : '';
+    return this.request<PaytmSyncResponse>(`/api/instruments/sync-paytm${query}`, {
+      method: 'POST',
+    });
+  }
+
+  // Compatibility aliases
+  async getAlpacaStatus(): Promise<PaytmStatus> {
+    return this.getPaytmStatus();
+  }
+
+  async syncAlpacaPrices(symbols?: string): Promise<PaytmSyncResponse> {
+    return this.syncPaytmPrices(symbols);
+  }
+
+  async getHistoricalBars(
+    symbol: string,
+    timeframe: string = '1Day',
+    limit: number = 30
+  ): Promise<HistoricalBarsResponse> {
+    return this.request<HistoricalBarsResponse>(
+      `/api/instruments/${encodeURIComponent(symbol)}/bars?timeframe=${encodeURIComponent(
+        timeframe
+      )}&limit=${limit}`
+    );
   }
 
   // --- Trading / Orders Endpoints ---

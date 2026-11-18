@@ -17,6 +17,7 @@ export interface Instrument {
   symbol: string;
   company_name: string;
   current_price: number | string;
+  security_id?: number;
 }
 
 export interface Quote {
@@ -28,7 +29,64 @@ export interface Quote {
   change_percent?: number;
   day_high?: number;
   day_low?: number;
+  bid_price?: number;
+  ask_price?: number;
+  volume?: number;
+  exchange?: string;
+  currency?: string;
+  security_id?: number;
+  source?: 'paytm' | 'paytm_ws' | 'alpaca' | 'simulated' | string;
+  updated_at?: string;
 }
+
+export interface LiveTick {
+  type: string;
+  exchange?: string;
+  symbol: string;
+  security_id?: number;
+  last_price: number;
+  change?: number;
+  change_percent?: number;
+  volume?: number;
+  timestamp?: number;
+  source?: string;
+}
+
+export interface BarItem {
+  t: string;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v: number;
+}
+
+export interface HistoricalBarsResponse {
+  symbol: string;
+  timeframe: string;
+  source: string;
+  bars: BarItem[];
+}
+
+export interface PaytmStatus {
+  configured: boolean;
+  authenticated: boolean;
+  merchant_id?: string;
+  token_valid_until?: string;
+  feed: string;
+  login_url: string;
+  message: string;
+}
+
+export interface PaytmSyncResponse {
+  synced_count: number;
+  updated_instruments: string[];
+  source: string;
+  timestamp: string;
+}
+
+export type AlpacaStatus = PaytmStatus;
+export type AlpacaSyncResponse = PaytmSyncResponse;
 
 export type OrderSide = 'buy' | 'sell';
 export type OrderStatus = 'pending' | 'executed' | 'cancelled' | 'rejected';
@@ -55,6 +113,7 @@ export interface WatchlistItem {
   symbol: string;
   company_name?: string;
   current_price?: number | string;
+  security_id?: number;
   created_at: string;
 }
 

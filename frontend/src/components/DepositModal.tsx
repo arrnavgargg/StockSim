@@ -17,12 +17,12 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onS
 
   if (!isOpen) return null;
 
-  const presets = [500, 1000, 5000, 10000];
+  const presets = [5000, 10000, 50000, 100000];
 
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (amount <= 0) {
-      setError('Deposit amount must be greater than $0.');
+      setError('Deposit amount must be greater than ₹0.');
       return;
     }
 
@@ -31,7 +31,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onS
       setError(null);
       await api.deposit(amount);
       await refreshUser();
-      onSuccess(`Successfully deposited $${amount.toLocaleString()} virtual funds into your wallet!`);
+      onSuccess(`Successfully deposited ₹${amount.toLocaleString('en-IN')} virtual funds into your wallet!`);
       onClose();
     } catch (err: any) {
       setError(err.message || 'Deposit failed.');
@@ -70,16 +70,16 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onS
         <form onSubmit={handleDeposit} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Deposit Amount (USD)
+              Deposit Amount (INR)
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-lg font-bold">
-                $
+                ₹
               </span>
               <input
                 type="number"
                 min="1"
-                max="1000000"
+                max="10000000"
                 step="1"
                 value={amount}
                 onChange={(e) => setAmount(Math.max(1, parseFloat(e.target.value) || 0))}
@@ -101,7 +101,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onS
                     : 'bg-slate-800/60 border-slate-700/60 text-slate-300 hover:bg-slate-700'
                 }`}
               >
-                +${preset.toLocaleString()}
+                +₹{preset.toLocaleString('en-IN')}
               </button>
             ))}
           </div>
@@ -117,7 +117,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onS
                 Processing Deposit...
               </span>
             ) : (
-              `Confirm Deposit of $${amount.toLocaleString()}`
+              `Confirm Deposit of ₹${amount.toLocaleString('en-IN')}`
             )}
           </button>
         </form>
