@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -12,11 +12,17 @@ class WalletService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_or_create_wallet(self, user_id: int) -> Wallet:
+    def get_or_create_wallet(
+        self, user_id: int, initial_balance: Optional[Decimal] = None
+    ) -> Wallet:
         """Retrieve user's wallet or provision one with default virtual balance."""
         wallet = self.db.query(Wallet).filter(Wallet.user_id == user_id).first()
         if not wallet:
-            starting_balance = Decimal(str(settings.STARTING_WALLET_BALANCE))
+            starting_balance = (
+                initial_balance
+                if initial_balance is not None and initial_balance > 0
+                else Decimal(str(settings.STARTING_WALLET_BALANCE))
+            )
             wallet = Wallet(
                 user_id=user_id,
                 balance=starting_balance,

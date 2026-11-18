@@ -86,10 +86,20 @@ class ApiClient {
   }
 
   // --- Auth Endpoints ---
-  async register(username: string, email: string, password: string): Promise<User> {
+  async register(
+    username: string,
+    email: string,
+    password: string,
+    initialCapital?: number
+  ): Promise<User> {
     return this.request<User>('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+        initial_capital: initialCapital,
+      }),
     });
   }
 

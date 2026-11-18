@@ -1,3 +1,4 @@
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -39,7 +40,12 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
 
     # 3. Automatically provision starter virtual cash in wallet
     wallet_service = WalletService(db)
-    wallet = wallet_service.get_or_create_wallet(new_user.id)
+    starter_amount = (
+        Decimal(str(user_in.initial_capital))
+        if user_in.initial_capital and user_in.initial_capital > 0
+        else None
+    )
+    wallet = wallet_service.get_or_create_wallet(new_user.id, initial_balance=starter_amount)
 
     return UserResponse(
         id=new_user.id,
