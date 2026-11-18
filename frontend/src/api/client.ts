@@ -1,6 +1,8 @@
 import {
   AuthResponse,
   Instrument,
+  LimitOrder,
+  LimitOrderSide,
   Order,
   OrderSide,
   PortfolioHoldingItem,
@@ -9,6 +11,8 @@ import {
   Transaction,
   User,
   Wallet,
+  WatchlistItem,
+  WatchlistToggleResponse,
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -152,6 +156,52 @@ class ApiClient {
     return this.request<Order>(`/api/orders/${orderId}`);
   }
 
+  // --- Limit Orders (Auto-Trade) Endpoints ---
+  async createLimitOrder(
+    symbol: string,
+    side: LimitOrderSide,
+    quantity: number,
+    target_price: number
+  ): Promise<LimitOrder> {
+    return this.request<LimitOrder>('/api/limit-orders', {
+      method: 'POST',
+      body: JSON.stringify({
+        symbol: symbol.toUpperCase(),
+        side,
+        quantity,
+        target_price,
+      }),
+    });
+  }
+
+  async getLimitOrders(status?: string): Promise<LimitOrder[]> {
+    const query = status ? `?status=${encodeURIComponent(status)}` : '';
+    return this.request<LimitOrder[]>(`/api/limit-orders${query}`);
+  }
+
+  async getLimitOrder(limitOrderId: number): Promise<LimitOrder> {
+    return this.request<LimitOrder>(`/api/limit-orders/${limitOrderId}`);
+  }
+
+  async cancelLimitOrder(limitOrderId: number): Promise<LimitOrder> {
+    return this.request<LimitOrder>(`/api/limit-orders/${limitOrderId}/cancel`, {
+      method: 'POST',
+    });
+  }
+
+  async checkLimitOrderTriggers(): Promise<LimitOrder[]> {
+    return this.request<LimitOrder[]>('/api/limit-orders/check-triggers', {
+      method: 'POST',
+    });
+  }
+
+  async updateInstrumentPrice(symbol: string, price: number): Promise<Quote> {
+    return this.request<Quote>(`/api/instruments/${encodeURIComponent(symbol)}/price`, {
+      method: 'POST',
+      body: JSON.stringify({ price }),
+    });
+  }
+
   // --- Portfolio Endpoints ---
   async getPortfolioSummary(): Promise<PortfolioSummary> {
     return this.request<PortfolioSummary>('/api/portfolio/summary');
@@ -182,6 +232,33 @@ class ApiClient {
 
   async getTransactions(limit: number = 50): Promise<Transaction[]> {
     return this.request<Transaction[]>(`/api/wallet/transactions?limit=${limit}`);
+  }
+
+  // --- Watchlist Endpoints ---
+  async getWatchlist(): Promise<WatchlistItem[]> {
+    return this.request<WatchlistItem[]>('/api/watchlist');
+  }
+
+  async getWatchedSymbols(): Promise<string[]> {
+    return this.request<string[]>('/api/watchlist/symbols');
+  }
+
+  async toggleWatchlist(symbol: string): Promise<WatchlistToggleResponse> {
+    return this.request<WatchlistToggleResponse>(`/api/watchlist/${encodeURIComponent(symbol)}/toggle`, {
+      method: 'POST',
+    });
+  }
+
+  async addToWatchlist(symbol: string): Promise<WatchlistItem> {
+    return this.request<WatchlistItem>(`/api/watchlist/${encodeURIComponent(symbol)}`, {
+      method: 'POST',
+    });
+  }
+
+  async removeFromWatchlist(symbol: string): Promise<{ symbol: string; removed: boolean }> {
+    return this.request<{ symbol: string; removed: boolean }>(`/api/watchlist/${encodeURIComponent(symbol)}`, {
+      method: 'DELETE',
+    });
   }
 }
 

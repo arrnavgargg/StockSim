@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Instrument, Quote, PortfolioHoldingItem } from '../types';
 import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import { StockChart } from '../components/StockChart';
 import { TradingCard } from '../components/TradingCard';
 import { SeedBanner } from '../components/SeedBanner';
@@ -12,6 +13,7 @@ import {
   SlidersHorizontal,
   Flame,
   CheckCircle,
+  Star,
 } from 'lucide-react';
 
 interface TradingProps {
@@ -25,6 +27,7 @@ export const Trading: React.FC<TradingProps> = ({
   userHoldings,
   onRefreshData,
 }) => {
+  const { user } = useAuth();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [selectedSymbol, setSelectedSymbol] = useState<string>('AAPL');
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
@@ -32,6 +35,8 @@ export const Trading: React.FC<TradingProps> = ({
   const [search, setSearch] = useState<string>('');
   const [loadingInstruments, setLoadingInstruments] = useState<boolean>(true);
   const [loadingQuote, setLoadingQuote] = useState<boolean>(false);
+  const [watchedSymbols, setWatchedSymbols] = useState<string[]>([]);
+  const [activeWatchTab, setActiveWatchTab] = useState<'all' | 'watchlist'>('all');
 
   // Fetch instruments catalog
   const fetchInstruments = async () => {
@@ -62,25 +67,78 @@ export const Trading: React.FC<TradingProps> = ({
   }, [search]);
 
   // Fetch quote when selectedSymbol changes
-  useEffect(() => {
+  const fetchQuote = async () => {
     if (!selectedSymbol) return;
-    const fetchQuote = async () => {
-      try {
-        setLoadingQuote(true);
-        const q = await api.getQuote(selectedSymbol);
-        setSelectedQuote(q);
-      } catch (e) {
-        console.error('Error fetching quote:', e);
-      } finally {
-        setLoadingQuote(false);
-      }
-    };
+    try {
+      setLoadingQuote(true);
+      const q = await api.getQuote(selectedSymbol);
+      setSelectedQuote(q);
+    } catch (e) {
+      console.error('Error fetching quote:', e);
+    } finally {
+      setLoadingQuote(false);
+    }
+  };
 
+  useEffect(() => {
     fetchQuote();
-    // Poll quote every 15s for live market feel
-    const interval = setInterval(fetchQuote, 15000);
+    // Poll quote every 10s for live market feel
+    const interval = setInterval(fetchQuote, 10000);
     return () => clearInterval(interval);
   }, [selectedSymbol]);
+
+  // Fetch watchlist symbols
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      if (user) {
+        try {
+          const syms = await api.getWatchedSymbols();
+          setWatchedSymbols(syms);
+        } catch (e) {
+          console.error('Error fetching watchlist symbols:', e);
+        }
+      } else {
+        const saved = localStorage.getItem('stocksim_watchlist');
+        if (saved) {
+          try {
+            setWatchedSymbols(JSON.parse(saved));
+          } catch (e) {
+            console.error('Error loading watchlist from localStorage:', e);
+          }
+        }
+      }
+    };
+    fetchWatchlist();
+  }, [user]);
+
+  const handleToggleWatchlist = async (symbol: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isWatched = watchedSymbols.includes(symbol);
+    const updated = isWatched
+      ? watchedSymbols.filter((s) => s !== symbol)
+      : [...watchedSymbols, symbol];
+    setWatchedSymbols(updated);
+
+    if (user) {
+      try {
+        const res = await api.toggleWatchlist(symbol);
+        onSuccessToast(res.message);
+      } catch (err: any) {
+        setWatchedSymbols(watchedSymbols);
+        onSuccessToast(err.response?.data?.detail || err.message || 'Failed to update watchlist');
+      }
+    } else {
+      localStorage.setItem('stocksim_watchlist', JSON.stringify(updated));
+      onSuccessToast(
+        isWatched ? `Removed ${symbol} from watchlist` : `Saved ${symbol} to watchlist`
+      );
+    }
+  };
+
+  const displayedInstruments =
+    activeWatchTab === 'watchlist'
+      ? instruments.filter((i) => watchedSymbols.includes(i.symbol))
+      : instruments;
 
   const handleSelectInstrument = (inst: Instrument) => {
     setSelectedSymbol(inst.symbol);
@@ -114,8 +172,41 @@ export const Trading: React.FC<TradingProps> = ({
               </button>
             </div>
 
+            {/* Watchlist Tabs */}
+            <div className="flex items-center gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-slate-800/80 my-3 text-xs">
+              <button
+                type="button"
+                onClick={() => setActiveWatchTab('all')}
+                className={`flex-1 py-1.5 px-3 rounded-lg font-medium transition ${
+                  activeWatchTab === 'all'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                }`}
+              >
+                All Stocks ({instruments.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveWatchTab('watchlist')}
+                className={`flex-1 py-1.5 px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 ${
+                  activeWatchTab === 'watchlist'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                }`}
+              >
+                <Star
+                  className={`w-3.5 h-3.5 ${
+                    activeWatchTab === 'watchlist'
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'text-slate-400'
+                  }`}
+                />
+                <span>Watchlist ({watchedSymbols.length})</span>
+              </button>
+            </div>
+
             {/* Search Input */}
-            <div className="relative my-3">
+            <div className="relative mb-3">
               <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
@@ -132,40 +223,67 @@ export const Trading: React.FC<TradingProps> = ({
                 <div className="py-12 text-center text-xs text-slate-500">
                   Loading instruments...
                 </div>
-              ) : instruments.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-500">
-                  No stocks match &quot;{search}&quot;
+              ) : displayedInstruments.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-500 space-y-2">
+                  {activeWatchTab === 'watchlist' ? (
+                    <div className="p-4">
+                      <Star className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                      <p className="font-semibold text-slate-300">Watchlist is empty</p>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Click the star icon next to any stock in &quot;All Stocks&quot; to save it here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>No stocks match &quot;{search}&quot;</div>
+                  )}
                 </div>
               ) : (
-                instruments.map((inst) => {
+                displayedInstruments.map((inst) => {
                   const isSelected = inst.symbol === selectedSymbol;
                   const price = Number(inst.current_price);
                   const holding = userHoldings.find((h) => h.symbol === inst.symbol);
+                  const isWatched = watchedSymbols.includes(inst.symbol);
 
                   return (
                     <div
                       key={inst.id}
                       onClick={() => handleSelectInstrument(inst)}
-                      className={`p-3 rounded-xl cursor-pointer transition-all border flex items-center justify-between ${
+                      className={`p-3 rounded-xl cursor-pointer transition-all border flex items-center justify-between group ${
                         isSelected
                           ? 'bg-indigo-950/40 border-indigo-500/60 shadow-lg shadow-indigo-950/30'
                           : 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-800/60 hover:border-slate-700'
                       }`}
                     >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-white font-mono">
-                            {inst.symbol}
-                          </span>
-                          {holding && (
-                            <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-mono px-1.5 py-0.2 rounded border border-emerald-500/30">
-                              {holding.quantity} sh
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleWatchlist(inst.symbol, e)}
+                          className="p-1 rounded-md hover:bg-slate-800/80 transition"
+                          title={isWatched ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                        >
+                          <Star
+                            className={`w-4 h-4 transition-transform hover:scale-110 ${
+                              isWatched
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-slate-600 hover:text-amber-400'
+                            }`}
+                          />
+                        </button>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-white font-mono">
+                              {inst.symbol}
                             </span>
-                          )}
+                            {holding && (
+                              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-mono px-1.5 py-0.2 rounded border border-emerald-500/30">
+                                {holding.quantity} sh
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 truncate max-w-[130px]">
+                            {inst.company_name}
+                          </p>
                         </div>
-                        <p className="text-[11px] text-slate-400 truncate max-w-[140px]">
-                          {inst.company_name}
-                        </p>
                       </div>
 
                       <div className="text-right">
@@ -197,6 +315,13 @@ export const Trading: React.FC<TradingProps> = ({
               userHolding={currentHolding}
               onOrderSuccess={(msg) => {
                 onSuccessToast(msg);
+                onRefreshData();
+                fetchQuote();
+                fetchInstruments();
+              }}
+              onPriceSimulated={() => {
+                fetchInstruments();
+                fetchQuote();
                 onRefreshData();
               }}
             />

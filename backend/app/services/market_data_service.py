@@ -96,6 +96,8 @@ class MarketDataService:
                     current_price=item["current_price"],
                 )
                 self.db.add(inst)
+            else:
+                inst.current_price = item["current_price"]
             seeded.append(inst)
         self.db.commit()
         return seeded

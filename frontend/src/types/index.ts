@@ -33,6 +33,37 @@ export interface Quote {
 export type OrderSide = 'buy' | 'sell';
 export type OrderStatus = 'pending' | 'executed' | 'cancelled' | 'rejected';
 
+export type LimitOrderSide = 'buy' | 'sell';
+export type LimitOrderStatus = 'active' | 'triggered' | 'cancelled' | 'expired';
+
+export interface LimitOrder {
+  id: number;
+  user_id: number;
+  symbol: string;
+  side: LimitOrderSide;
+  quantity: number;
+  target_price: number | string;
+  status: LimitOrderStatus | string;
+  created_at: string;
+  triggered_at?: string;
+  executed_order_id?: number;
+}
+
+export interface WatchlistItem {
+  id: number;
+  user_id: number;
+  symbol: string;
+  company_name?: string;
+  current_price?: number | string;
+  created_at: string;
+}
+
+export interface WatchlistToggleResponse {
+  symbol: string;
+  is_watched: boolean;
+  message: string;
+}
+
 export interface Order {
   id: number;
   user_id: number;

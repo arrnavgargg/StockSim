@@ -1,10 +1,12 @@
-from . import auth, deps, instruments, orders, portfolio, wallet
+from . import auth, deps, instruments, limit_orders, orders, portfolio, wallet, watchlist
 
 __all__ = [
     "auth",
     "deps",
     "instruments",
+    "limit_orders",
     "orders",
     "portfolio",
     "wallet",
+    "watchlist",
 ]
