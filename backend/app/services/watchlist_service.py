@@ -5,6 +5,8 @@ from app.core.exceptions import InstrumentNotFoundException
 from app.models.instrument import Instrument
 from app.models.watchlist import WatchlistItem
 from app.schemas.watchlist import WatchlistItemResponse, WatchlistToggleResponse
+from app.services.paytm_service import INDIAN_EQUITIES
+from app.services.scrip_master_service import scrip_master
 
 
 class WatchlistService:
@@ -15,7 +17,18 @@ class WatchlistService:
         symbol_upper = symbol.strip().upper()
         inst = self.db.query(Instrument).filter(Instrument.symbol == symbol_upper).first()
         if not inst:
-            raise InstrumentNotFoundException(symbol_upper)
+            m = scrip_master.get_by_symbol(symbol_upper)
+            if m:
+                inst = Instrument(
+                    symbol=m["symbol"],
+                    company_name=m["name"],
+                    current_price=m["price"],
+                )
+                self.db.add(inst)
+                self.db.commit()
+                self.db.refresh(inst)
+            else:
+                raise InstrumentNotFoundException(symbol_upper)
         return inst
 
     def get_user_watchlist(self, user_id: int) -> List[WatchlistItemResponse]:
@@ -30,6 +43,20 @@ class WatchlistService:
         result: List[WatchlistItemResponse] = []
         for item in items:
             inst = self.db.query(Instrument).filter(Instrument.symbol == item.symbol).first()
+            if not inst:
+                m = scrip_master.get_by_symbol(item.symbol)
+                if m:
+                    inst = Instrument(
+                        symbol=m["symbol"],
+                        company_name=m["name"],
+                        current_price=m["price"],
+                    )
+                    self.db.add(inst)
+                    self.db.commit()
+                    self.db.refresh(inst)
+
+            meta = INDIAN_EQUITIES.get(item.symbol)
+            sec_id = meta.get("security_id") if meta else None
             result.append(
                 WatchlistItemResponse(
                     id=item.id,
@@ -37,6 +64,7 @@ class WatchlistService:
                     symbol=item.symbol,
                     company_name=inst.company_name if inst else item.symbol,
                     current_price=inst.current_price if inst else None,
+                    security_id=sec_id,
                     created_at=item.created_at,
                 )
             )

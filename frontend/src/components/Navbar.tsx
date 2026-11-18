@@ -236,7 +236,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="hidden lg:flex flex-col items-end px-3 py-1 bg-slate-900/80 rounded-lg border border-slate-800">
                     <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">Net Worth</span>
                     <span className="text-xs font-mono font-bold text-white">
-                      ${netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{netWorth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 )}
@@ -246,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="flex flex-col mr-3">
                     <span className="text-[10px] uppercase font-mono text-slate-400">Available Cash</span>
                     <span className="text-sm font-bold text-emerald-400 font-mono">
-                      ${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <button
@@ -301,8 +301,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }}
                   className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-950/40 transition flex items-center gap-1.5"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Get Started Free</span>
+                  <span>Start with ₹10,00,000</span>
                 </button>
               </div>
             )}

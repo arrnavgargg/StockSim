@@ -20,12 +20,12 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, o
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     if (amount <= 0) {
-      setError('Withdrawal amount must be greater than $0.');
+      setError('Withdrawal amount must be greater than ₹0.');
       return;
     }
 
     if (amount > walletBalance) {
-      setError(`Cannot withdraw $${amount.toFixed(2)}: Available balance is $${walletBalance.toFixed(2)}.`);
+      setError(`Cannot withdraw ₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}: Available balance is ₹${walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`);
       return;
     }
 
@@ -34,7 +34,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, o
       setError(null);
       await api.withdraw(amount);
       await refreshUser();
-      onSuccess(`Successfully withdrew $${amount.toLocaleString()} from your wallet!`);
+      onSuccess(`Successfully withdrew ₹${amount.toLocaleString('en-IN')} from your wallet!`);
       onClose();
     } catch (err: any) {
       setError(err.message || 'Withdrawal failed.');
@@ -64,7 +64,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, o
           </div>
           <h2 className="text-xl font-black text-white">Withdraw Funds</h2>
           <p className="text-xs text-slate-400 mt-1">
-            Available to withdraw: <span className="text-emerald-400 font-mono font-bold">${walletBalance.toFixed(2)}</span>
+            Available to withdraw: <span className="text-emerald-400 font-mono font-bold">₹{walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </p>
         </div>
 
@@ -78,11 +78,11 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, o
         <form onSubmit={handleWithdraw} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Withdrawal Amount (USD)
+              Withdrawal Amount (INR)
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-lg font-bold">
-                $
+                ₹
               </span>
               <input
                 type="number"
@@ -121,7 +121,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, o
                 Processing Withdrawal...
               </span>
             ) : (
-              `Confirm Withdrawal of $${amount.toLocaleString()}`
+              `Confirm Withdrawal of ₹${amount.toLocaleString('en-IN')}`
             )}
           </button>
         </form>

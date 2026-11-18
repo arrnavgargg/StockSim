@@ -285,10 +285,10 @@ export const Orders: React.FC = () => {
                           {o.quantity} shares
                         </td>
                         <td className="py-3.5 px-4 text-slate-200">
-                          ${Number(o.price).toFixed(2)}
+                          ₹{Number(o.price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-3.5 px-4 font-bold text-white">
-                          ${total.toFixed(2)}
+                          ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-3.5 px-4">
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 font-sans">
@@ -376,13 +376,13 @@ export const Orders: React.FC = () => {
                           {lo.quantity} shares
                         </td>
                         <td className="py-3.5 px-4 text-white font-bold text-sm">
-                          ${Number(lo.target_price).toFixed(2)}
+                          ₹{Number(lo.target_price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           <span className="text-[10px] text-slate-400 font-normal block">
                             {isBuy ? 'triggers on drop' : 'triggers on rise'}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 font-bold text-slate-200">
-                          ${targetVal.toFixed(2)}
+                          ₹{targetVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-3.5 px-4">
                           {isActive && (

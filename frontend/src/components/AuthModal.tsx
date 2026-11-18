@@ -121,8 +121,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onSuccess }) => {
           </h2>
           <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
             {authMode === 'register'
-              ? 'Join StockSim with zero financial risk. Practice live trading with simulated capital.'
-              : 'Sign in to access your virtual desk, monitor active positions, and route orders.'}
+              ? 'Join StockSim and receive a ₹10,00,000 INR virtual portfolio'
+              : 'Sign in to access your portfolio and execute trades'}
           </p>
         </div>
 
@@ -154,10 +154,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onSuccess }) => {
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Register Free</span>
+            Register (₹10L Bonus)
           </button>
         </div>
+
+        {/* ₹10,00,000 Starter Banner for Registration */}
+        {authMode === 'register' && (
+          <div className="mb-5 p-3 rounded-xl bg-gradient-to-r from-emerald-950/60 to-indigo-950/60 border border-emerald-500/30 flex items-center gap-3">
+            <Sparkles className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="text-xs">
+              <span className="font-bold text-emerald-300 block">
+                ₹10,00,000 Starter Capital Included
+              </span>
+              <span className="text-slate-400">
+                Risk-free virtual cash automatically deposited upon registration.
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (
@@ -350,10 +364,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onSuccess }) => {
                 <span>Authenticating...</span>
               </span>
             ) : authMode === 'register' ? (
-              <>
-                <span>Claim ${selectedCapital.toLocaleString()} & Launch Desk</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
+              'Create Account & Claim ₹10,00,000'
             ) : (
               <>
                 <span>Sign In to Terminal</span>

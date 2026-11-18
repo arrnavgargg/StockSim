@@ -2,6 +2,8 @@
 __pycache__/
 *.py[codz]
 *$py.class
+*.paytm_session.json
+.paytm_session.json
 
 # C extensions
 *.so
