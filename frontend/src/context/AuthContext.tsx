@@ -12,7 +12,12 @@ interface AuthContextType {
   setShowAuthModal: (show: boolean) => void;
   setAuthMode: (mode: 'login' | 'register') => void;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (
+    username: string,
+    email: string,
+    password: string,
+    initialCapital?: number
+  ) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   updateBalance: (balance: number) => void;
@@ -68,9 +73,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setShowAuthModal(false);
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (
+    username: string,
+    email: string,
+    password: string,
+    initialCapital?: number
+  ) => {
     // 1. Call register
-    await api.register(username, email, password);
+    await api.register(username, email, password, initialCapital);
     // 2. Automatically log in to get token & set session
     await login(username, password);
   };

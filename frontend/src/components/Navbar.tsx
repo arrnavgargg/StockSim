@@ -10,6 +10,9 @@ import {
   PlusCircle,
   Activity,
   Layers,
+  Sparkles,
+  Zap,
+  Home,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -45,11 +48,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const handleQuickDemo = async () => {
     try {
-      // Try logging into a demo account or register one
       const demoUser = 'demotrader';
       const demoPass = 'DemoPassword123!';
       try {
         await login(demoUser, demoPass);
+        onTabChange('trading');
       } catch {
         // If demo user doesn't exist, register
         const res = await fetch('/api/auth/register', {
@@ -59,14 +62,38 @@ export const Navbar: React.FC<NavbarProps> = ({
             username: demoUser,
             email: 'demotrader@stocksim.com',
             password: demoPass,
+            initial_capital: 100000,
           }),
         });
         if (res.ok) {
           await login(demoUser, demoPass);
+          onTabChange('trading');
         }
       }
     } catch (e) {
       console.error('Demo login error:', e);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    onTabChange('landing');
+  };
+
+  const scrollToSection = (id: string) => {
+    if (currentTab !== 'landing') {
+      onTabChange('landing');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -78,9 +105,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-8">
             <div
               className="flex items-center gap-3 cursor-pointer group"
-              onClick={() => onTabChange('trading')}
+              onClick={() => onTabChange(user ? 'trading' : 'landing')}
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-indigo-950/40 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-indigo-950/40 group-hover:scale-105 transition-transform">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -101,56 +128,103 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="hidden md:flex items-center space-x-1">
-              <button
-                onClick={() => onTabChange('trading')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                  currentTab === 'trading'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                <Activity className="w-4 h-4 text-emerald-400" />
-                Terminal
-              </button>
+            {/* Navigation Tabs - Authenticated vs Unauthenticated */}
+            {user ? (
+              <div className="hidden md:flex items-center space-x-1">
+                <button
+                  onClick={() => onTabChange('trading')}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                    currentTab === 'trading'
+                      ? 'bg-slate-800 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  <Activity className="w-4 h-4 text-emerald-400" />
+                  Terminal
+                </button>
 
-              <button
-                onClick={() => onTabChange('portfolio')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                  currentTab === 'portfolio'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                <LayoutDashboard className="w-4 h-4 text-indigo-400" />
-                Portfolio
-              </button>
+                <button
+                  onClick={() => onTabChange('portfolio')}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                    currentTab === 'portfolio'
+                      ? 'bg-slate-800 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4 text-indigo-400" />
+                  Portfolio
+                </button>
 
-              <button
-                onClick={() => onTabChange('orders')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                  currentTab === 'orders'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                <Clock className="w-4 h-4 text-amber-400" />
-                Orders
-              </button>
+                <button
+                  onClick={() => onTabChange('orders')}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                    currentTab === 'orders'
+                      ? 'bg-slate-800 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  Orders
+                </button>
 
-              <button
-                onClick={() => onTabChange('wallet')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                  currentTab === 'wallet'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                <Wallet className="w-4 h-4 text-cyan-400" />
-                Wallet
-              </button>
-            </div>
+                <button
+                  onClick={() => onTabChange('wallet')}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                    currentTab === 'wallet'
+                      ? 'bg-slate-800 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  <Wallet className="w-4 h-4 text-cyan-400" />
+                  Wallet
+                </button>
+
+                <button
+                  onClick={() => onTabChange('landing')}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all ${
+                    currentTab === 'landing' ? 'bg-slate-800 text-white' : ''
+                  }`}
+                  title="View Landing Page"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span>Overview</span>
+                </button>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center space-x-1 text-xs">
+                <button
+                  onClick={() => onTabChange('landing')}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                    currentTab === 'landing' ? 'text-white bg-slate-800/60' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Home
+                </button>
+                <button
+                  onClick={() => scrollToSection('features')}
+                  className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition"
+                >
+                  Features
+                </button>
+                <button
+                  onClick={() => scrollToSection('stats')}
+                  className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition"
+                >
+                  Metrics
+                </button>
+                <button
+                  onClick={() => onTabChange('trading')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+                    currentTab === 'trading'
+                      ? 'bg-indigo-950/80 text-indigo-300 border border-indigo-700/60'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Terminal (Guest)</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right: Auth & Financial Balance Badges */}
@@ -193,7 +267,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {user.username}
                   </span>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="p-2 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"
                     title="Sign Out"
                   >
@@ -205,9 +279,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleQuickDemo}
-                  className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-300 bg-indigo-950/60 border border-indigo-700/50 hover:bg-indigo-900/60 transition"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-300 bg-indigo-950/60 border border-indigo-700/50 hover:bg-indigo-900/60 transition shadow"
+                  title="Log in with demo account"
                 >
-                  ⚡ Demo Trader
+                  <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <span>Demo Trader</span>
                 </button>
                 <button
                   onClick={() => {
@@ -232,41 +308,51 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Navigation Tabs */}
-        <div className="flex md:hidden items-center justify-around py-2 border-t border-slate-800/80">
-          <button
-            onClick={() => onTabChange('trading')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-              currentTab === 'trading' ? 'bg-slate-800 text-white' : 'text-slate-400'
-            }`}
-          >
-            Terminal
-          </button>
-          <button
-            onClick={() => onTabChange('portfolio')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-              currentTab === 'portfolio' ? 'bg-slate-800 text-white' : 'text-slate-400'
-            }`}
-          >
-            Portfolio
-          </button>
-          <button
-            onClick={() => onTabChange('orders')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-              currentTab === 'orders' ? 'bg-slate-800 text-white' : 'text-slate-400'
-            }`}
-          >
-            Orders
-          </button>
-          <button
-            onClick={() => onTabChange('wallet')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-              currentTab === 'wallet' ? 'bg-slate-800 text-white' : 'text-slate-400'
-            }`}
-          >
-            Wallet
-          </button>
-        </div>
+        {/* Mobile Navigation Tabs (when logged in) */}
+        {user && (
+          <div className="flex md:hidden items-center justify-around py-2 border-t border-slate-800/80">
+            <button
+              onClick={() => onTabChange('trading')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                currentTab === 'trading' ? 'bg-slate-800 text-white' : 'text-slate-400'
+              }`}
+            >
+              Terminal
+            </button>
+            <button
+              onClick={() => onTabChange('portfolio')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                currentTab === 'portfolio' ? 'bg-slate-800 text-white' : 'text-slate-400'
+              }`}
+            >
+              Portfolio
+            </button>
+            <button
+              onClick={() => onTabChange('orders')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                currentTab === 'orders' ? 'bg-slate-800 text-white' : 'text-slate-400'
+              }`}
+            >
+              Orders
+            </button>
+            <button
+              onClick={() => onTabChange('wallet')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                currentTab === 'wallet' ? 'bg-slate-800 text-white' : 'text-slate-400'
+              }`}
+            >
+              Wallet
+            </button>
+            <button
+              onClick={() => onTabChange('landing')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                currentTab === 'landing' ? 'bg-slate-800 text-white' : 'text-slate-400'
+              }`}
+            >
+              Home
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );

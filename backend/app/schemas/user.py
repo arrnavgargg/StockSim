@@ -7,6 +7,7 @@ class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=50, description="Unique username")
     email: EmailStr = Field(..., description="Unique email address")
     password: str = Field(..., min_length=6, max_length=100, description="Account password")
+    initial_capital: Optional[float] = Field(default=None, description="Starting virtual capital")
 
 
 class UserLogin(BaseModel):
